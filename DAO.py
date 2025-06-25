@@ -31,15 +31,20 @@ class DAO():
         xapellido = input("Apellido: ")
         xtelefono = input("Numero telefónico: ")
         xemail = input("Email: ")
-        xservicio = input("Servicio: ")
+        xservicio = list(input("Servicio: ").split(","))
         test = True
         idsServicios = []
         for s in self.servicios:
             idsServicios.append(s.get_codigo())
+        test2 = True
+        for s in xservicio:
+            if(s not in idsServicios):
+                test2 = False
+                break
         for e in self.empleados:
-            if(e.get_cedula() == xcedula or xservicio not in idsServicios):
+            if(e.get_cedula() == xcedula):
                 test = False
-        if(test):
+        if(test and test2):
             empleado = Empleado(xcedula,xnombre,xapellido,xtelefono,xemail,xservicio)
             self.empleados.append(empleado)        
             print("Operacion exitosa :)\n")
@@ -173,7 +178,7 @@ class DAO():
                     temp1 = []
                     for r in self.consultar_Reservas(xcedula):
                         temp1.append(r.imprimir())
-                    print(f"Cita: {xcedula}\n")
+                    print(f"Cliente ID: {xcedula}\n")
                     print(tabulate(temp1,headers=["Id Reserva","Id Especialista","Id Servicio","Fecha","Hora"]))   
                 elif(tramiteCliente == "4"):
                     break
@@ -184,7 +189,7 @@ class DAO():
         print("Bienvenido a crear una cuenta, por favor: ")
         test = True
         xcedula = input("Ingrese su cedula: ")
-        for c in self.empleados:
+        for c in self.clientes:
             if(c.get_cedula() == xcedula):
                 test = False
         if(test):
@@ -279,8 +284,8 @@ class DAO():
                                 print("Opcion incorrecta")
                     elif(tramiteAdmin == "2"):
                         while(True):
-                            print("Modulo de Administacion/Servicios\nPresione:\n1: Ingresar un servicio\n2: Borrar un servicio\n3: salir")
-                            tramiteAdminServicios = input("-->")
+                            print("Modulo de Administacion/Servicios\nPresione:\n1: Ingresar un servicio\n2: Borrar un servicio\n3: Salir")
+                            tramiteAdminServicios = input("--> ")
                             if(tramiteAdminServicios == "1"):
                                 self.crear_servicio()
                             elif(tramiteAdminServicios == "2"):
