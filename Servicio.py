@@ -28,4 +28,6 @@ class Servicio:
     def remove_especialista(self,empleado):
         if(empleado in self.listaEspecialistas):
             self.listaEspecialistas.remove(empleado)
-        
+    
+    def formato_escrito(self):
+        return f"{self.codigo};{self.nombre};{self.duracion};{self.costo};{self.listaEspecialistas}\n"

@@ -30,4 +30,5 @@ class Empleado:
         if(self.contador > 0):
             self.contador -= 1
     
-    
+    def formato_escrito(self):
+        return f"{self.cedula};{self.nombre};{self.apellido};{self.telefono};{self.email};{self.servicio}\n"

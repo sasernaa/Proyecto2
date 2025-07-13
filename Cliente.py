@@ -14,3 +14,6 @@ class Cliente:
     
     def get_nombre(self):
         return self.nombre
+    
+    def formato_escrito(self):
+        return f"{self.cedula};{self.nombre};{self.apellido};{self.telefono};{self.email}\n"

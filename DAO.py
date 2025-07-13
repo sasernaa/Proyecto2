@@ -1,15 +1,55 @@
+import re
+import io
+import os
 from Cliente import Cliente
 from Empleado import Empleado
 from Servicio import Servicio
 from Reserva import Reserva
 from tabulate import tabulate #Instalar tabulate (pip install tabulate)
+from datetime import datetime
+from datetime import date
 
 class DAO():
-    def __init__(self,clientes,servicios,empleados,reservas = []):
+    def __init__(self,clientes,servicios,empleados,handleClientes,handleEmpleados,handleServicios,handleReservas,reservas):
         self.clientes = clientes
         self.servicios = servicios
         self.empleados = empleados
+        self.handleClientes = handleClientes
+        self.handleEmpleados = handleEmpleados
+        self.handleServicios = handleServicios
+        self.handleReservas = handleReservas
         self.reservas = reservas
+
+    def validar_codigo_servicio(self,codigo):
+        validCode = re.match(r'^[0-9]{3}$',codigo)
+        return True if validCode else False
+
+    def validar_email(self,email):
+        validEmail = re.match(r'^[a-zA-Z0-9_]+@[a-zA-Z0-9]+\.[a-z]{2,}$',email)
+        return True if validEmail else False
+    
+    def validar_nombre(self,nombre):
+        validName = re.match(r'^[a-zA-Z]+$',nombre)
+        return True if validName else False
+
+    def validar_telefono(self,telefono):
+        validTelephone = re.match(r'^[0-9\s]{10}$',telefono)
+        return True if validTelephone else False
+    
+    def validar_cedula(self,cedula):
+        validCedula = re.match(r'^[0-9]{7,10}$',cedula)
+        return True if validCedula else False
+
+    def validar_fecha(self,fecha):
+        formatoFecha = "%d/%m/%Y"
+        try:
+            tempdate = datetime.strptime(fecha,formatoFecha)
+            if(tempdate >= datetime.now()):
+                return True
+            else:
+                raise ValueError()
+        except ValueError:
+            return False
 
     def get_codigos(self,lista):
         temp = []
@@ -25,31 +65,74 @@ class DAO():
         return test
     
     def crear_Empleado(self):
-        print("Bienvenido a la seccion crear empleado, por favor digite:")
-        xcedula = input("Cedula: ")
-        xnombre = input("Primer nombre: ")
-        xapellido = input("Apellido: ")
-        xtelefono = input("Numero telefónico: ")
-        xemail = input("Email: ")
-        xservicio = list(input("Servicio: ").split(","))
-        test = True
-        idsServicios = []
-        for s in self.servicios:
-            idsServicios.append(s.get_codigo())
-        test2 = True
-        for s in xservicio:
-            if(s not in idsServicios):
-                test2 = False
+        print("Bienvenido a la seccion crear empleado, para cancelar la operacion digite: salir()\nPor favor digite:")
+        while(True):
+            xcedula = input("Cedula: ")
+            if(xcedula == "salir()"):
                 break
-        for e in self.empleados:
-            if(e.get_cedula() == xcedula):
-                test = False
-        if(test and test2):
-            empleado = Empleado(xcedula,xnombre,xapellido,xtelefono,xemail,xservicio)
-            self.empleados.append(empleado)        
-            print("Operacion exitosa :)\n")
-        else:
-            print("Error: Duplicidad en id de empleado/No existe codigo de servicio")
+            elif(self.validar_cedula(xcedula)):
+                while(True):
+                    xnombre = input("Primer nombre: ")
+                    if(xnombre == "salir()"):
+                        break
+                    elif(self.validar_nombre(xnombre)):
+                        while(True):
+                            xapellido = input("Apellido: ")
+                            if(xapellido == "salir()"):
+                                break
+                            elif(self.validar_nombre(xapellido)):
+                                while(True):
+                                    xtelefono = "".join(input("Numero telefónico: ").split(" "))
+                                    if(xtelefono == "salir()"):
+                                        break
+                                    elif(self.validar_telefono(xtelefono)):
+                                        while(True):
+                                            xemail = input("Email: ")
+                                            if(xemail == "salir()"):
+                                                break
+                                            elif(self.validar_email(xemail)):
+                                                xservicio = list(input("Servicio: ").split(","))
+                                                if(xservicio == ["salir()"]):
+                                                    break
+                                                else:
+                                                    test = True
+                                                    idsServicios = []
+                                                    for s in self.servicios:
+                                                        idsServicios.append(s.get_codigo())
+                                                    test2 = True
+                                                    for s in xservicio:
+                                                        if(s not in idsServicios):
+                                                            test2 = False
+                                                            break
+                                                    for e in self.empleados:
+                                                        if(e.get_cedula() == xcedula):
+                                                            test = False
+                                                    if(test and test2):
+                                                        empleado = Empleado(xcedula,xnombre,xapellido,xtelefono,xemail,xservicio)
+                                                        self.empleados.append(empleado)
+                                                        self.handleEmpleados.seek(0,io.SEEK_END)
+                                                        self.handleEmpleados.write(empleado.formato_escrito())
+                                                        self.handleEmpleados.flush()
+                                                        os.fsync(self.handleEmpleados.fileno())        
+                                                        print("Operacion exitosa :)\n")
+                                                        break
+                                                    else:
+                                                        print("Error: Duplicidad en id de empleado/No existe codigo de servicio")
+                                                break
+                                            else:
+                                                print(f"{xemail} no es un email valido :(\nDebe tener formato de email")
+                                        break
+                                    else:
+                                        print(f"{xtelefono} no es un numero telefonico valido :(\nSolo se acepta numeros y espacios con 10 caracteres")
+                                break    
+                            else:
+                                print(f"{xapellido} no es un apellido valido :(\nEl formato solo acepta letras sin espacio")
+                        break
+                    else:
+                        print(f"{xnombre} no es un nombre valido :(\nEl formato solo acepta letras sin espacio")
+                break
+            else:
+                print("Formato de cedula incorrecto :(\nDebe ser numeros entre 7-10 caracteres sin espacio")
 
     def borrar_Empleado(self):
         print("Bienvenido a la seccion borrar empleado, por favor digite:")
@@ -62,6 +145,13 @@ class DAO():
         if(test):
             if(self.verificar_Empleado_sin_Reservas(xcedula)):
                 self.empleados.remove(e)
+                self.handleEmpleados.seek(0)
+                self.handleEmpleados.truncate()
+                for empleado in self.empleados:
+                    self.handleEmpleados.write(empleado.formato_escrito().rstrip("\n"))
+                    self.handleEmpleados.write("\n")
+                self.handleEmpleados.flush()
+                os.fsync(self.handleEmpleados.fileno())
                 print("Operacion exitosa :)")
             else:
                 print(f"No se puede borrar al empleado de cedula: {xcedula}\nYa tiene una reserva asignada :(")
@@ -109,30 +199,62 @@ class DAO():
         return test
     
     def crear_Reserva(self,xcedula):
-        print("Modulo Cliente/Agendar_cita Digite:")
-        xidReserva = input("Añada un id para la reserva: ")
-        test = self.validar_idReserva(xidReserva)
-        if(not test):
-            print("Este id de la reserva ya existe")
-        else:
-            xidespecialista = input("Cedula del especialista: ")
-            if(xidespecialista in self.get_codigos(self.empleados) and test):
-                xidservicio = input("Codigo del servicio: ")
-                xfecha = input("Fecha(DD/MM/YYYY): ")
-                xhora = input("Hora(8-18): ")
-                if(self.validar_agenda_Empleado(xidespecialista,xfecha,xhora)):
-                    if(self.validar_agenda_Cliente(xcedula,xfecha,xhora)):
-                        if(self.validar_disponibilidad_Reserva(xidespecialista,xidservicio,xfecha,xhora)):
-                            reserva = Reserva(xidReserva,xcedula,xidespecialista,xidservicio,xfecha,xhora)
-                            self.reservas.append(reserva)
-                            print("Operacion exitosa :)\n",f"Recuerde su cita para: {xfecha} a las {xhora}")
-                            print(len(self.reservas))
-                    else:
-                        print(f"Ya tienes un cita agendada para la fecha: {xfecha} y la hora: {xhora}")        
-                else:
-                    print(f"El especialista con id: {xidespecialista} ya esta ocupado para\nFecha: {xfecha} y hora: {xhora}")
+        print("Modulo Cliente/Agendar_cita Digite:\nSi desea salir digite: salir()")
+        while(True):
+            xidReserva = input("Añada un id para la reserva: ")
+            if(xidReserva == "salir()"):
+                break
             else:
-                print(f"No existe un especialista de id: {xidespecialista} :(")
+                test = self.validar_idReserva(xidReserva)
+                if(not test):
+                    print("Este id de la reserva ya existe")
+                else:
+                    while(True):
+                        xidespecialista = input("Cedula del especialista: ")
+                        if(xidespecialista == "salir()"):
+                            break
+                        else:
+                            if(xidespecialista in self.get_codigos(self.empleados) and test):
+                                while(True):
+                                    xidservicio = input("Codigo del servicio: ")
+                                    if(xidservicio == "salir()"):
+                                        break
+                                    else:
+                                        while(True):
+                                            xfecha = input("Fecha(DD/MM/YYYY): ")
+                                            if(xfecha == "salir()"):
+                                                break
+                                            elif(self.validar_fecha(xfecha)):
+                                                while(True):
+                                                    xhora = input("Hora(8-18): ")
+                                                    if(xhora == "salir()"):
+                                                        break
+                                                    elif(xhora in ["8","9","10","11","12","13","14","15","16","17","18"]):
+                                                        if(self.validar_agenda_Empleado(xidespecialista,xfecha,xhora)):
+                                                            if(self.validar_agenda_Cliente(xcedula,xfecha,xhora)):
+                                                                if(self.validar_disponibilidad_Reserva(xidespecialista,xidservicio,xfecha,xhora)):
+                                                                    reserva = Reserva(xidReserva,xcedula,xidespecialista,xidservicio,xfecha,xhora)
+                                                                    self.reservas.append(reserva)
+                                                                    self.handleReservas.seek(0,io.SEEK_END)
+                                                                    self.handleReservas.write(reserva.formato_escrito())
+                                                                    self.handleReservas.flush()
+                                                                    os.fsync(self.handleReservas.fileno())
+                                                                    print("Operacion exitosa :)\n",f"Recuerde su cita para: {xfecha} a las {xhora}")
+                                                                    break
+                                                            else:
+                                                                print(f"Ya tienes un cita agendada para la fecha: {xfecha} y la hora: {xhora}")        
+                                                        else:
+                                                            print(f"El especialista con id: {xidespecialista} ya esta ocupado para\nFecha: {xfecha} y hora: {xhora}")
+                                                    else:
+                                                        print("La hora debe ser un numero entre 8 y 18")
+                                                break
+                                            else:
+                                                print("Formato invalido para fecha, se espera recibir: D/M/YYYY")
+                                        break
+                                break
+                            else:
+                                print(f"No existe un especialista de id: {xidespecialista} :(")
+                    break
 
     def consultar_Reservas(self,xcedula):
         listaReservas = []
@@ -152,6 +274,13 @@ class DAO():
             print(f"No se encontro reserva con codigo {xidReserva} :(")
         if(temp != 0):    
             self.reservas.remove(temp)
+            self.handleReservas.seek(0)
+            self.handleReservas.truncate()
+            for reserva in self.reservas:
+                self.handleReservas.write(reserva.formato_escrito().rstrip("\n"))
+                self.handleReservas.write("\n")
+            self.handleReservas.flush()
+            os.fsync(self.handleReservas.fileno())
             print(f"Se ha borrado la reserva con id: {xidReserva}")
 
     def acceder_cliente(self):
@@ -186,49 +315,120 @@ class DAO():
                     print("Opcion incorrecta :(")
 
     def crear_cliente(self):
-        print("Bienvenido a crear una cuenta, por favor: ")
-        test = True
-        xcedula = input("Ingrese su cedula: ")
-        for c in self.clientes:
-            if(c.get_cedula() == xcedula):
-                test = False
-        if(test):
-            xnombre = input("Ingrese su primer nombre: ")
-            xapellido = input("Ingrese su apellido: ")
-            xtelefono = input("Ingrese su número telefónico: ")
-            xemail = input("Ingrese su email: ")
-            cliente = Cliente(cedula=xcedula,nombre=xnombre,apellido=xapellido,telefono=xtelefono,email=xemail)
-            self.clientes.append(cliente)
-            print("Operacion exitosa :)")
-            for c in self.clientes:
-                print(c)
-        else:
-            print("Este usuario ya existe :(")
+        print("Bienvenido a crear una cuenta, si desea salir digite: salir()\nPor favor: ")
+        while(True):
+            test = True
+            xcedula = input("Ingrese su cedula: ")
+            if(xcedula == "salir()"):
+                break
+            elif(self.validar_cedula(xcedula)):
+                for c in self.clientes:
+                    if(c.get_cedula() == xcedula):
+                        test = False
+                if(test):
+                    while(True):
+                        xnombre = input("Ingrese su primer nombre: ")
+                        if(xnombre == "salir()"):
+                            break
+                        elif(self.validar_nombre(xnombre)):
+                            while(True):
+                                xapellido = input("Ingrese su apellido: ")
+                                if(xapellido == "salir()"):
+                                    break
+                                elif(self.validar_nombre(xapellido)):
+                                    while(True):
+                                        xtelefono = "".join(input("Ingrese su número telefónico: ").split(" "))
+                                        if(xtelefono == "salir()"):
+                                            break
+                                        elif(self.validar_telefono(xtelefono)):
+                                            while(True):
+                                                xemail = input("Ingrese su email: ")
+                                                if(xemail == "salir()"):
+                                                    break
+                                                elif(self.validar_email(xemail)):
+                                                    cliente = Cliente(cedula=xcedula,nombre=xnombre,apellido=xapellido,telefono=xtelefono,email=xemail)
+                                                    self.clientes.append(cliente)
+                                                    self.handleClientes.seek(0,io.SEEK_END)
+                                                    self.handleClientes.write(cliente.formato_escrito())
+                                                    self.handleClientes.flush()
+                                                    os.fsync(self.handleClientes.fileno())
+                                                    print("Operacion exitosa :)")
+                                                    print(cliente)
+                                                    break
+                                                else:
+                                                    print(f"{xemail} no es un email valido :(\nDebe tener formato de email")
+                                            break
+                                        else:
+                                            print(f"{xtelefono} no es un numero telefonico valido :(\nSolo se acepta numeros y espacios con 10 caracteres")
+                                    break
+                                else:
+                                    print(f"{xapellido} no es un apellido valido :(\nEl formato solo acepta letras sin espacio")
+                            break
+                        else:
+                            print(f"{xnombre} no es un nombre valido :(\nEl formato solo acepta letras sin espacio")
+                    break
+                else:
+                    print("Este usuario ya existe :(")
+            else:
+                print("Formato de cedula incorrecto :(\nDebe ser numeros entre 7-10 caracteres sin espacio")
 
     def crear_servicio(self):
-        print("Modulo crear servicio, por favor digite:")
-        xcodigo = input("Codigo: ")
-        test = True
-        for s in self.servicios:
-            if(s.get_codigo() == xcodigo):
-                test = False
-        if(test):
-            xnombre = input("Nombre: ")
-            xduracion = 60
-            xcosto = int(input("Costo: "))
-            xlistaEspecialistas = list(input("Cedulas de especialistas: ").split(","))
-            test2 = True
-            for i in xlistaEspecialistas:
-                if(i not in self.get_codigos(self.empleados)):
-                    test2 = False
-            if(test2):
-                servicio = Servicio(xcodigo,xnombre,xduracion,xcosto,xlistaEspecialistas)
-                self.servicios.append(servicio)        
-                print("Operacion exitosa :)")
+        print("Modulo crear servicio, si desea salir digite: salir()\nPor favor digite:")
+        while(True):
+            xcodigo = input("Codigo: ")
+            if(xcodigo == "salir()"):
+                break
+            elif(self.validar_codigo_servicio(xcodigo)):
+                test = True
+                for s in self.servicios:
+                    if(s.get_codigo() == xcodigo):
+                        test = False
+                if(test):
+                    while(True):
+                        xnombre = input("Nombre: ")
+                        if(xnombre == "salir()"):
+                            break
+                        elif(self.validar_nombre(xnombre)):
+                            xduracion = 60
+                            while(True):
+                                xcosto = input("Costo: ")
+                                if(xcosto == "salir()"):
+                                    break
+                                else:
+                                    try:
+                                        xcosto = int(xcosto)
+                                        while(True):
+                                            xlistaEspecialistas = list(input("Cedulas de especialistas: ").split(","))
+                                            if(xlistaEspecialistas == ["salir()"]):
+                                                break
+                                            else:
+                                                test2 = True
+                                                for i in xlistaEspecialistas:
+                                                    if(i not in self.get_codigos(self.empleados)):
+                                                        test2 = False
+                                                if(test2):
+                                                    servicio = Servicio(xcodigo,xnombre,xduracion,xcosto,xlistaEspecialistas)
+                                                    self.servicios.append(servicio)
+                                                    self.handleServicios.seek(0,io.SEEK_END)
+                                                    self.handleServicios.write(servicio.formato_escrito())      
+                                                    self.handleServicios.flush()  
+                                                    os.fsync(self.handleServicios.fileno())
+                                                    print("Operacion exitosa :)")
+                                                    break
+                                                else:
+                                                    print("Verifique la cedula de los especialistas que ingreso")
+                                        break
+                                    except ValueError:
+                                        print(f"{xcosto} no es un costo valido, debe ser un numero entero positivo")
+                                        continue
+                            break
+                        else:
+                            print(f"{xnombre} no es un nombre valido :(\nEl formato solo acepta letras sin espacio")
+                    break
+                else:
+                    print("Este servicio ya existe :(")
             else:
-                print("Verifique la cedula de los especialistas que ingreso")
-        else:
-            print("Este servicio ya existe :(")
+                print(f"{xcodigo} no es un formato de código valido, solo se aceptan 3 numeros")
     
     def verificar_Servicio_sin_Reservas(self,codigo):
         test = True
@@ -246,6 +446,13 @@ class DAO():
         if(temp != 0):
             if(self.verificar_Servicio_sin_Reservas(codigo)):
                 self.servicios.remove(temp)
+                self.handleServicios.seek(0)
+                self.handleServicios.truncate()
+                for servicio in self.servicios:
+                    self.handleServicios.write(servicio.formato_escrito().rstrip("\n"))
+                    self.handleServicios.write("\n")
+                self.handleServicios.flush()
+                os.fsync(self.handleServicios.fileno())
                 print(f"Se ha eliminado el servicio de codigo: {codigo} exitosamente :)")
             else:
                 print(f"El servicio de codigo: {codigo} tiene una reserva pendiente :(")
@@ -259,16 +466,21 @@ class DAO():
             print("Bienvenido al spa \"Dolorcito Quito\"")
             tramite = input("Ingrese:\n1: Ingresar como cliente\n2: Ingresar como admin\n3: Salir\n--> ")
             if(tramite == "1"):
-                print("Presione:\n1: Acceder a su cuenta\n2: Crear una cuenta")
-                tramiteCliente = input("--> ")
-                if(tramiteCliente == "1"):
-                    self.acceder_cliente()
-                elif(tramiteCliente == "2"):
-                    self.crear_cliente()
+                while(True):
+                    print("Modulo Cliente Presione:\n1: Acceder a su cuenta\n2: Crear una cuenta\n3: Salir")
+                    tramiteCliente = input("--> ")
+                    if(tramiteCliente == "1"):
+                        self.acceder_cliente()
+                    elif(tramiteCliente == "2"):
+                        self.crear_cliente()
+                    elif(tramiteCliente == "3"):
+                        break
+                    else:
+                        print("Opcion incorrecta")
             
             elif(tramite == "2"):
                 while(True):
-                    print("Modulo de Administracion\n1: Modulo empleados\n2: Modulo servicios\n3: Salir")
+                    print("Modulo Administracion\n1: Modulo empleados\n2: Modulo servicios\n3: Salir")
                     tramiteAdmin = input("-->")
                     if(tramiteAdmin == "1"):
                         while(True):
@@ -284,7 +496,7 @@ class DAO():
                                 print("Opcion incorrecta")
                     elif(tramiteAdmin == "2"):
                         while(True):
-                            print("Modulo de Administacion/Servicios\nPresione:\n1: Ingresar un servicio\n2: Borrar un servicio\n3: Salir")
+                            print("Modulo Administacion/Servicios\nPresione:\n1: Ingresar un servicio\n2: Borrar un servicio\n3: Salir")
                             tramiteAdminServicios = input("--> ")
                             if(tramiteAdminServicios == "1"):
                                 self.crear_servicio()

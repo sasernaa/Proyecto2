@@ -28,4 +28,6 @@ class Reserva:
     def get_idservicio(self):
         return self.idservicio
     
+    def formato_escrito(self):
+        return f"{self.idReserva};{self.idCliente};{self.idespecialista};{self.idservicio};{self.fecha};{self.hora}\n"
     

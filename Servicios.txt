@@ -1,0 +1,7 @@
+001;Masaje;60;65000;[listaEmpleados[0],listaEmpleados[2]]
+002;Masaje con final feliz;60;500000;[listaEmpleados[1],listaEmpleados[2]]
+003;Terapia;60;95000;[listaEmpleados[1],listaEmpleados[3]]
+004;Hidroterapia;60;145000;[listaEmpleados[0],listaEmpleados[3]]
+111;masajote;60;70000;['1111111', '1415161718']
+123;MejorMasaje;60;89000;['1111111']
+222;Mascara;60;6000;['2222222']
