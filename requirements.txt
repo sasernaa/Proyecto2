@@ -1,0 +1,6 @@
+Es necesario el uso de las librerias:
+-io
+-re
+-os
+-datetime
+-tabulate
