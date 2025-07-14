@@ -1,14 +1,16 @@
 class Reserva:
-    def __init__(self,idReserva,idCliente,idespecialista,idservicio,fecha,hora):
+    def __init__(self,idReserva,idCliente,idespecialista,idservicio,costo,nombreservicio,fecha,hora):
         self.idReserva = idReserva
         self.idCliente = idCliente
         self.idespecialista = idespecialista
         self.idservicio = idservicio
         self.fecha = fecha
         self.hora = hora
+        self.costo = costo
+        self.nombreservicio = nombreservicio
     
     def imprimir(self):
-        return [self.idReserva,self.idespecialista,self.idservicio,self.fecha,self.hora]
+        return [self.idReserva,self.idespecialista,self.idservicio,self.fecha,self.hora,self.costo,self.nombreservicio]
 
     def get_idReserva(self):
         return self.idReserva
@@ -29,5 +31,5 @@ class Reserva:
         return self.idservicio
     
     def formato_escrito(self):
-        return f"{self.idReserva};{self.idCliente};{self.idespecialista};{self.idservicio};{self.fecha};{self.hora}\n"
+        return f"{self.idReserva};{self.idCliente};{self.idespecialista};{self.idservicio};{self.costo};{self.nombreservicio};{self.fecha};{self.hora}\n"
     

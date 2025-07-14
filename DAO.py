@@ -221,7 +221,7 @@ class DAO():
                                         break
                                     else:
                                         while(True):
-                                            xfecha = input("Fecha(DD/MM/YYYY): ")
+                                            xfecha = input("Fecha(D/M/YYYY): ")
                                             if(xfecha == "salir()"):
                                                 break
                                             elif(self.validar_fecha(xfecha)):
@@ -233,7 +233,12 @@ class DAO():
                                                         if(self.validar_agenda_Empleado(xidespecialista,xfecha,xhora)):
                                                             if(self.validar_agenda_Cliente(xcedula,xfecha,xhora)):
                                                                 if(self.validar_disponibilidad_Reserva(xidespecialista,xidservicio,xfecha,xhora)):
-                                                                    reserva = Reserva(xidReserva,xcedula,xidespecialista,xidservicio,xfecha,xhora)
+                                                                    tempserv = 0
+                                                                    for s in self.servicios:
+                                                                        if(s.get_codigo() == xidservicio):
+                                                                            tempserv = s
+                                                                            break
+                                                                    reserva = Reserva(xidReserva,xcedula,xidespecialista,xidservicio,tempserv.get_costo(),tempserv.get_nombre(),xfecha,xhora)
                                                                     self.reservas.append(reserva)
                                                                     self.handleReservas.seek(0,io.SEEK_END)
                                                                     self.handleReservas.write(reserva.formato_escrito())
@@ -308,7 +313,7 @@ class DAO():
                     for r in self.consultar_Reservas(xcedula):
                         temp1.append(r.imprimir())
                     print(f"Cliente ID: {xcedula}\n")
-                    print(tabulate(temp1,headers=["Id Reserva","Id Especialista","Id Servicio","Fecha","Hora"]))   
+                    print(tabulate(temp1,headers=["Id Reserva","Id Especialista","Id Servicio","Fecha","Hora","Costo","Servicio"]))   
                 elif(tramiteCliente == "4"):
                     break
                 else:

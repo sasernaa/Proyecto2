@@ -38,7 +38,7 @@ handleReserva = open("Reservas.txt","a+")
 handleReserva.seek(0)
 for linea in handleReserva:
     constructor = list(linea.split(";"))
-    listaReservas.append(Reserva(constructor[0],constructor[1],constructor[2],constructor[3],constructor[4],constructor[5]))
+    listaReservas.append(Reserva(constructor[0],constructor[1],constructor[2],constructor[3],constructor[4],constructor[5],constructor[6],constructor[7].rstrip("\n")))
 
 daoIns = DAO(listaClientes,listaServicios,listaEmpleados,handleCliente,handleEmpleado,handleServicio,handleReserva,listaReservas)
 
