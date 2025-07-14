@@ -158,6 +158,104 @@ class DAO():
         else:
             print(f"No existe un empleado con cedula: {xcedula}")
     
+    def editar_archivotxt_empleado(self,xidEmpleado,xoperacion,xnuevo):
+        datos = []
+        for e in self.empleados:
+            if(e.get_cedula() == xidEmpleado):
+                for d in [e.get_cedula(),e.get_solonombre(),e.get_soloapellido(),e.get_telefono(),e.get_email(),e.get_servicio()]:
+                    datos.append(d)
+                break
+        print(datos)
+        print(int(xoperacion))
+        datos[int(xoperacion)] = xnuevo
+        tempEmple = 0
+        for e in self.empleados:
+            if(e.get_cedula() == xidEmpleado):
+                tempEmple = e
+                break
+        tempEmple = Empleado(datos[0],datos[1],datos[2],datos[3],datos[4],datos[5])
+        for i in range(len(self.empleados)):
+            if(self.empleados[i].get_cedula() == tempEmple.get_cedula()):
+                self.empleados[i] = tempEmple
+        self.handleEmpleados.seek(0)
+        self.handleEmpleados.truncate()
+        for e in self.empleados:
+            self.handleEmpleados.write(e.formato_escrito().rstrip("\n"))
+            self.handleEmpleados.write("\n")
+        self.handleEmpleados.flush()
+        os.fsync(self.handleEmpleados.fileno())
+
+    def editar_Empleado(self):
+        print("Bienvenido a la seccion editar empleado, si desea cancelar la operación digite salir()\nPor favor digite:")
+        while(True):
+            xidEmpleado = input("Cedula del empleado: ")
+            if(xidEmpleado == "salir()"):
+                break
+            elif(self.validar_cedula(xidEmpleado)):
+                temp = 0
+                for e in self.empleados:
+                    if(e.get_cedula() == xidEmpleado):
+                        temp = e
+                        break
+                if(temp != 0):
+                    print(temp)
+                    print("Presione:\n1: Editar nombre\n2: Editar apellido\n3: Editar telefono\n4: Editar email\n5: Editar servicios")
+                    while(True):
+                        operacion = input("--> ")
+                        if(operacion == "salir()"):
+                            break
+                        elif(operacion in ["1","2","3","4","5"]):
+                            while(True):
+                                nuevo = input("Digite el dato actualizado: ")
+                                if(operacion == "1"):
+                                    if(self.validar_nombre(nuevo)):
+                                        self.editar_archivotxt_empleado(xidEmpleado,operacion,nuevo)
+                                        print("Operación exitosa :)")
+                                        break
+                                    else:
+                                        print("Nombre invalido")
+                                elif(operacion == "2"):
+                                    if(self.validar_nombre(nuevo)):
+                                        self.editar_archivotxt_empleado(xidEmpleado,operacion,nuevo)
+                                        print("Operación exitosa :)")
+                                        break
+                                    else:
+                                        print("Apellido invalido") 
+                                elif(operacion == "3"):
+                                    if(self.validar_telefono(nuevo)):
+                                        self.editar_archivotxt_empleado(xidEmpleado,operacion,nuevo)
+                                        print("Operación exitosa :)")
+                                        break
+                                    else:
+                                        print("Telefono invalido") 
+                                elif(operacion == "4"):
+                                    if(self.validar_email(nuevo)):
+                                        self.editar_archivotxt_empleado(xidEmpleado,operacion,nuevo)
+                                        print("Operación exitosa :)")
+                                        break
+                                    else:
+                                        print("Email invalido") 
+                                elif(operacion == "5"):
+                                    try:
+                                        a = list(nuevo)
+                                        self.editar_archivotxt_empleado(xidEmpleado,operacion,nuevo)
+                                        print("Operación exitosa :)")
+                                        break
+                                    except ValueError:
+                                        print("Lista invalida")
+                                elif(nuevo == "salir()"):
+                                    break
+                                else:
+                                    print("Opcion incorrecta :(")                           
+                            break
+                        else:
+                            print("Opcion incorrecta :(")
+                    break
+                else:
+                    print(f"No se ha encontrado un empleado de cedula {xidEmpleado}")
+            else:
+                print(f"{xidEmpleado} no es un formato valido de cedula, solo se aceptan de 7 a 10 numeros")
+
     def validar_idReserva(self,idReserva):
         test = True
         listaidReservas = []
@@ -489,13 +587,15 @@ class DAO():
                     tramiteAdmin = input("-->")
                     if(tramiteAdmin == "1"):
                         while(True):
-                            print("Modulo Administracion/Empleados\nPresione:\n1: Agregar un nuevo empleado\n2: Eliminar un empleado\n3: Salir")
+                            print("Modulo Administracion/Empleados\nPresione:\n1: Agregar un nuevo empleado\n2: Eliminar un empleado\n3: Editar empleado\n4: Salir")
                             tramiteAdminEmpleado = input("-->")
                             if(tramiteAdminEmpleado == "1"):
                                 self.crear_Empleado()
                             elif(tramiteAdminEmpleado == "2"):
                                 self.borrar_Empleado()
                             elif(tramiteAdminEmpleado == "3"):
+                                self.editar_Empleado()
+                            elif(tramiteAdminEmpleado == "4"):
                                 break
                             else:
                                 print("Opcion incorrecta")

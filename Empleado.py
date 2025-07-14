@@ -17,6 +17,18 @@ class Empleado:
     def get_nombre(self):
         return self.nombre + " " + self.apellido
     
+    def get_solonombre(self):
+        return self.nombre
+
+    def get_soloapellido(self):
+        return self.apellido
+    
+    def get_telefono(self):
+        return self.telefono
+
+    def get_email(self):
+        return self.email
+
     def get_servicio(self):
         return self.servicio
     
